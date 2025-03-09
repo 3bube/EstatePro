@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getMessagesForConversation, sendMessage, markMessageAsRead } from "@/api/message.api";
 import { useAuth } from "@/context/AuthContext";
@@ -62,33 +62,38 @@ export function ChatArea({
     enabled: !!conversation?._id,
   });
 
+  // Use useMemo to prevent messages from changing on every render
+  const messages = useMemo(() => messagesData?.data ?? [], [messagesData]);
+
   const sendMessageMutation = useMutation({
     mutationFn: (content: string) =>
       sendMessage({
-        recipientId: getOtherParticipant()?._id ?? "",
-        propertyId: conversation?.propertyId ?? "",
+        recipientId: getOtherParticipant()?._id || "",
+        propertyId: conversation.propertyId,
         content,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["messages", conversation?._id],
+        queryKey: ["messages", conversation._id],
       });
+      setNewMessage("");
     },
   });
 
   const markMessageReadMutation = useMutation({
-    mutationFn: (messageId: string) => markMessageAsRead(messageId),
+    mutationFn: (messageIds: string[]) => markMessageAsRead(messageIds),
   });
-
-  const messages = messagesData?.data ?? [];
 
   // Only process unread messages when the conversation changes or when messages are first loaded
   useEffect(() => {
     // Only run if we have messages and query was successful
-    if (!isSuccess || !messages.length || !conversation?._id || !user?._id) {
+    if (!isSuccess || !messages.length || !conversation?._id || !user) {
       return;
     }
 
+    // Create a user ID variable that won't be null
+    const userId = user.id;
+    
     // Check if conversation has changed
     const isNewConversation = previousConversationId.current !== conversation._id;
     
@@ -102,7 +107,7 @@ export function ChatArea({
     const unreadMessages = messages.filter(
       (message: Message) => 
         !message.read && 
-        message.sender._id !== user._id &&
+        message.sender._id !== userId &&
         !processedMessageIds.current.has(message._id)
     );
 
@@ -114,129 +119,153 @@ export function ChatArea({
     // Process each unread message only once
     const processUnreadMessages = async () => {
       // Create a list of message IDs to mark as read
-      const messageIdsToProcess = unreadMessages.map(msg => msg._id);
+      const messageIdsToProcess = unreadMessages.map((msg: Message) => msg._id);
       
       // Mark all IDs as processed to prevent future processing
-      messageIdsToProcess.forEach(id => {
+      messageIdsToProcess.forEach((id: string) => {
         processedMessageIds.current.add(id);
       });
       
-      // Only mark the last message as read to reduce API calls
-      // This is a common pattern in messaging apps
-      const lastMessageId = messageIdsToProcess[messageIdsToProcess.length - 1];
-      
+      // Call API to mark messages as read
       try {
-        await markMessageReadMutation.mutateAsync(lastMessageId);
-        // Refresh messages after marking as read
-        queryClient.invalidateQueries({
-          queryKey: ["messages", conversation._id],
-        });
+        await markMessageReadMutation.mutateAsync(messageIdsToProcess);
+        
+        // Invalidate query to refresh messages
+        queryClient.invalidateQueries({ queryKey: ["messages", conversation._id] });
       } catch (error) {
-        console.error("Error marking message as read:", error);
+        console.error("Error marking messages as read:", error);
       }
     };
-
-    // Execute the function
+    
     processUnreadMessages();
     
     // Clean up function
     return () => {
       // No cleanup needed here
     };
-  }, [conversation?._id, isSuccess, markMessageReadMutation, messages, queryClient, user._id]); // Add all required dependencies
+  }, [conversation?._id, isSuccess, messages, queryClient, user, markMessageReadMutation]); // Added markMessageReadMutation
 
   const getOtherParticipant = () => {
-    return conversation?.participants?.find(
-      (participant) => participant._id !== user._id
+    if (!user || !conversation?.participants) return null;
+    
+    return conversation.participants.find(
+      (participant) => participant._id !== user.id
     );
   };
 
   const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      console.log(newMessage);
-      sendMessageMutation.mutate(newMessage);
-      setNewMessage("");
-    }
+    if (newMessage.trim() === "") return;
+    sendMessageMutation.mutate(newMessage);
   };
 
-  const otherParticipant = getOtherParticipant();
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const isCurrentUserMessage = (message: Message) => {
+    if (!user) return false;
+    return message.sender._id === user.id;
+  };
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   return (
-    <>
-      <div className="bg-white border-b border-gray-200 p-4 flex justify-between items-center">
-        <div>
-          <h2 className="text-lg font-semibold text-[#2C3E50]">
-            {otherParticipant
-              ? `${otherParticipant.firstName} ${otherParticipant.lastName}`
-              : ""}
-          </h2>
-          <p className="text-sm text-gray-500">{propertyTitle}</p>
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center">
+          <div className="ml-3">
+            <p className="font-medium">{getOtherParticipant()?.firstName} {getOtherParticipant()?.lastName}</p>
+            <p className="text-sm text-gray-500">{propertyTitle}</p>
+          </div>
         </div>
         <button
           onClick={onTogglePropertySidebar}
-          className="text-[#2C3E50] hover:text-[#E74C3C]"
+          className="text-gray-600 hover:text-gray-900"
         >
-          Toggle Property Details
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16m-7 6h7"
+            />
+          </svg>
         </button>
       </div>
+
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message: Message) => (
           <div
             key={message._id}
             className={`flex ${
-              message.sender._id === user._id ? "justify-end" : "justify-start"
+              isCurrentUserMessage(message) ? "justify-end" : "justify-start"
             }`}
           >
             <div
-              className={`max-w-xs lg:max-w-md xl:max-w-lg px-4 py-2 rounded-lg ${
-                message.sender._id === user._id
-                  ? "bg-[#2C3E50] text-white"
-                  : "bg-gray-200 text-gray-800"
+              className={`max-w-[80%] rounded-lg p-3 ${
+                isCurrentUserMessage(message)
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200"
               }`}
             >
               <p>{message.content}</p>
-              <div className="flex justify-between items-center mt-1">
-                <span className="text-xs opacity-75">
-                  {new Date(message.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-                {message.sender._id === user._id && (
-                  <span className="text-xs opacity-75">
-                    {message.read ? "Read" : "Delivered"}
-                  </span>
-                )}
-              </div>
+              <p
+                className={`text-xs mt-1 ${
+                  isCurrentUserMessage(message)
+                    ? "text-blue-100"
+                    : "text-gray-500"
+                }`}
+              >
+                {formatTime(message.createdAt)}
+              </p>
             </div>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
-      <div className="bg-white border-t border-gray-200 p-4">
+
+      <div className="border-t p-4">
         <div className="flex items-center">
-          <button className="text-gray-500 hover:text-[#2C3E50] mr-2">
+          <button className="text-gray-500 hover:text-gray-700 mr-2">
             <PaperClipIcon className="h-5 w-5" />
           </button>
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#2C3E50]"
-            onKeyPress={(e) => {
-              if (e.key === "Enter") {
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
                 handleSendMessage();
               }
             }}
+            placeholder="Type a message..."
+            className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             onClick={handleSendMessage}
-            className="ml-2 bg-[#2C3E50] text-white rounded-full p-2 hover:bg-[#34495E]"
+            className="ml-2 bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <PaperAirplaneIcon className="h-5 w-5" />
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 }

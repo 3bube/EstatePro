@@ -46,12 +46,15 @@ export const getMessagesForConversation = async (conversationId: string) => {
   }
 };
 
-export const markMessageAsRead = async (messageId: string) => {
+export const markMessageAsRead = async (messageIds: string | string[]) => {
   try {
-    const response = await api.patch(`/messages/${messageId}`);
+    const response = await api.post("/messages/mark-as-read", {
+      messageIds: Array.isArray(messageIds) ? messageIds : [messageIds],
+    });
+
     return response.data;
   } catch (error) {
-    console.error("Error reading message:", error);
+    console.error("Error marking message as read:", error);
     throw error;
   }
 };

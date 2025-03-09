@@ -7,6 +7,23 @@ import { useQuery } from "@tanstack/react-query";
 import { getProperties } from "@/api/property.api";
 import { SkeletonCard } from "@/components/ListingSkeleton";
 
+interface Property {
+  _id: string; // Backend uses _id
+  id: string; // PropertyCard expects id
+  title: string;
+  description: string;
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  location: string;
+  address: string;
+  images: string[];
+  isFeatured: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function Home() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["properties"],
@@ -23,10 +40,10 @@ export default function Home() {
   }
 
   // filter the isFeatured properties
-  const featuredProperties = data?.filter((p: any) => p.isFeatured);
+  const featuredProperties = data?.filter((p: Property) => p.isFeatured);
 
   // filter the new listings
-  const newListings = data?.filter((p: any) => !p.isFeatured);
+  const newListings = data?.filter((p: Property) => !p.isFeatured);
 
   return (
     <main>
@@ -46,17 +63,17 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="my-8">
-        <h2 className="text-2xl font-bold mb-4">Featured Properties</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <section className="py-12 px-4 md:px-8">
+        <h2 className="text-2xl font-bold mb-6">Featured Properties</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-72">
-              {[...Array(4)].map((_, i) => (
-                <SkeletonCard key={i} />
-              ))}
-            </div>
+            <>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </>
           ) : featuredProperties?.length > 0 ? (
-            featuredProperties.map((property) => (
+            featuredProperties.map((property: Property) => (
               <PropertyCard key={property._id} property={property} />
             ))
           ) : (
@@ -67,17 +84,17 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="my-8">
-        <h2 className="text-2xl font-bold mb-4">New Listings</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <section className="py-12 px-4 md:px-8 bg-gray-50">
+        <h2 className="text-2xl font-bold mb-6">New Listings</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-72">
-              {[...Array(4)].map((_, i) => (
-                <SkeletonCard key={i} />
-              ))}
-            </div>
+            <>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </>
           ) : newListings?.length > 0 ? (
-            newListings.map((property) => (
+            newListings.map((property: Property) => (
               <PropertyCard key={property._id} property={property} />
             ))
           ) : (
