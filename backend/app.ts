@@ -61,8 +61,8 @@ app.use("/api/realtor", realtorRoutes);
 app.use("/api/admin", adminRoutes);
 
 // Health check
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
+app.get("/", (req: Request, res: Response) => {
+  res.status(200).json({ status: "ok", message: "Server is running" });
 });
 
 // Error handling
