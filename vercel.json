@@ -1,9 +1,3 @@
 {
-  "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "outputDirectory": "client/.next",
-  "framework": "nextjs",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/client/$1" }
-  ]
+  "builds": [{ "src": "package.json", "use": "@vercel/node" }]
 }
