@@ -1,7 +1,6 @@
 {
-  "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "outputDirectory": "client/.next",
-  "framework": "nextjs",
-  "rewrites": [{ "source": "/(.*)", "destination": "/client/$1" }]
+  "version": 2,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/client/$1" }
+  ]
 }
