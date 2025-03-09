@@ -6,21 +6,34 @@ const API_BASE_URL = "https://estate-pro-backend.vercel.app/api";
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-api.interceptors.request.use((config) => {
-  const token = getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   (error) => {
     if (error.response && error.response.status === 401) {
       removeToken();
+      if (typeof window !== "undefined") {
+        window.location.href = "/auth/login";
+      }
     }
     return Promise.reject(error);
   }
