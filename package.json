@@ -10,8 +10,5 @@
   },
   "workspaces": [
     "client"
-  ],
-  "dependencies": {
-    "estatepro": "file:"
-  }
+  ]
 }
