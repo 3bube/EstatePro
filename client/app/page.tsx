@@ -102,37 +102,6 @@ export default function Home() {
           )}
         </div>
       </section>
-
-      {/* categories */}
-      {/* <section className="my-8">
-        <h2 className="text-2xl font-bold mb-4">Categories</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <a
-            href="/category/buy"
-            className="bg-[#2C3E50] text-white p-4 rounded text-center hover:bg-[#E74C3C]"
-          >
-            Buy
-          </a>
-          <a
-            href="/category/rent"
-            className="bg-[#2C3E50] text-white p-4 rounded text-center hover:bg-[#E74C3C]"
-          >
-            Rent
-          </a>
-          <a
-            href="/category/commercial"
-            className="bg-[#2C3E50] text-white p-4 rounded text-center hover:bg-[#E74C3C]"
-          >
-            Commercial
-          </a>
-          <a
-            href="/category/new-developments"
-            className="bg-[#2C3E50] text-white p-4 rounded text-center hover:bg-[#E74C3C]"
-          >
-            New Developments
-          </a>
-        </div>
-      </section> */}
     </main>
   );
 }

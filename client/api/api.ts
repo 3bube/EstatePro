@@ -31,9 +31,9 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       removeToken();
-      if (typeof window !== "undefined") {
-        window.location.href = "/auth/login";
-      }
+      // if (typeof window !== "undefined") {
+      //   window.location.href = "/auth/login";
+      // }
     }
     return Promise.reject(error);
   }

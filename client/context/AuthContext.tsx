@@ -56,10 +56,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         const { data } = await api.get("/auth/me");
         setUser(data.data);
         setIsAuthenticated(true);
-      } catch (error) {
-        if (error instanceof Error) {
-          console.log(error.message);
-        }
+        // Don't redirect here - let the components handle their own routing
+      } catch {
+        // Don't log out or redirect on auth check failure
+        // Just update the state
         setUser(null);
         setIsAuthenticated(false);
       }
@@ -73,6 +73,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       saveToken(data.token, rememberMe);
       setUser(data.data);
       setIsAuthenticated(true);
+      
+      // Redirect to dashboard after successful login
+      router.push("/dashboard");
       
       // Return the response data so the component can handle redirection
       return data;
@@ -106,11 +109,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const logout = async () => {
-    await api.post("/auth/logout");
+    try {
+      await api.post("/auth/logout");
+    } catch (error) {
+      // Continue with logout even if the API call fails
+      console.error("Logout API error:", error);
+    }
     removeToken();
-    router.push("/");
     setUser(null);
     setIsAuthenticated(false);
+    router.push("/");
   };
 
   return (
