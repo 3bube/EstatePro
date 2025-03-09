@@ -4,9 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
 import morgan from "morgan";
-import { createServer } from "http";
 import { connectDB } from "./config/database";
-import { setupSocketIO } from "./config/socket";
 import { errorHandler, notFound } from "./utils/handler";
 import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
@@ -23,20 +21,35 @@ dotenv.config();
 
 // Initialize express app
 const app = express();
-const httpServer = createServer(app);
 
 // Connect to database
-connectDB();
+let isConnected = false;
+const connectToDatabase = async () => {
+  if (isConnected) {
+    return;
+  }
+  
+  try {
+    await connectDB();
+    isConnected = true;
+    console.log('Connected to MongoDB');
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+  }
+};
 
-// Setup socket.io
-const io = setupSocketIO(httpServer);
-app.set("io", io);
+// Connect to database on startup for serverless environment
+connectToDatabase();
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: '*', // Allow all origins in serverless environment
     credentials: true,
   })
 );
@@ -69,4 +82,21 @@ app.get("/", (req: Request, res: Response) => {
 app.use(notFound);
 app.use(errorHandler);
 
-export { app, httpServer };
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+  
+  // Setup socket.io for local development
+  try {
+    const { setupSocketIO } = require("./config/socket");
+    setupSocketIO(server);
+  } catch (error) {
+    console.error('Socket.io setup error:', error);
+  }
+}
+
+// Export for serverless
+export default app;
