@@ -52,28 +52,27 @@ app.use(
 // Configure CORS to allow specific origins with credentials
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://estate-pro-steel.vercel.app/",
+  "https://estate-pro-steel.vercel.app",
   "https://estatepro.vercel.app",
-  "https://estate-pro-client.vercel.app",
+  "https://estate-pro-client.vercel.app"
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps, curl requests)
-      if (!origin) return callback(null, true);
+// Use the cors middleware with proper configuration
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// Enable pre-flight for all routes
+app.options("*", cors());
 
 app.use(compression());
 app.use(morgan("dev"));
