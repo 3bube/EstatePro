@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,10 +56,26 @@ interface User {
   lastLogin?: string;
 }
 
+interface Property {
+  id: string;
+  title: string;
+  status: string;
+  type: string;
+  price: number;
+  createdAt: string;
+  address: string;
+}
+
+interface Activity {
+  action: string;
+  timestamp: string;
+  details: string;
+}
+
 interface UserDetails extends User {
   phoneNumber?: string;
-  properties?: any[];
-  activity?: any[];
+  properties?: Property[];
+  activity?: Activity[];
 }
 
 export default function UserManagementPage() {
@@ -291,9 +308,11 @@ export default function UserManagementPage() {
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
                         {user.profileImage ? (
-                          <img
+                          <Image
                             src={user.profileImage}
                             alt={`${user.firstName} ${user.lastName}`}
+                            width={32}
+                            height={32}
                             className="w-8 h-8 rounded-full object-cover"
                           />
                         ) : (
@@ -454,9 +473,11 @@ export default function UserManagementPage() {
               <div className="flex items-start gap-4">
                 <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
                   {selectedUser.profileImage ? (
-                    <img
+                    <Image
                       src={selectedUser.profileImage}
                       alt={`${selectedUser.firstName} ${selectedUser.lastName}`}
+                      width={80}
+                      height={80}
                       className="w-20 h-20 rounded-full object-cover"
                     />
                   ) : (
@@ -528,7 +549,7 @@ export default function UserManagementPage() {
                       <div key={index} className="p-2 border rounded">
                         <p className="font-medium">{property.title}</p>
                         <p className="text-sm text-gray-500">
-                          {property.address?.city}, {property.address?.state}
+                          {property.address}
                         </p>
                       </div>
                     ))}

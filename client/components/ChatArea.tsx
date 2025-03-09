@@ -143,7 +143,7 @@ export function ChatArea({
     return () => {
       // No cleanup needed here
     };
-  }, [conversation?._id, isSuccess]); // Only depend on conversation ID and query success
+  }, [conversation?._id, isSuccess, markMessageReadMutation, messages, queryClient, user._id]); // Add all required dependencies
 
   const getOtherParticipant = () => {
     return conversation?.participants?.find(

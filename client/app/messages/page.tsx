@@ -8,27 +8,46 @@ import { getConversationForUser } from "@/api/message.api";
 import { getPropertyById } from "@/api/property.api";
 import { useQuery } from "@tanstack/react-query";
 
+interface Conversation {
+  _id: string;
+  propertyId: string;
+  participants: string[];
+  lastMessage?: {
+    content: string;
+    timestamp: string;
+    sender: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Property {
+  data: {
+    title: string;
+  };
+}
+
 export default function MessagingPage() {
-  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [showPropertySidebar, setShowPropertySidebar] = useState(true);
 
   console.log(selectedConversation);
 
-  const { data: conversations, isLoading } = useQuery({
+  const { data: conversations } = useQuery({
     queryKey: ["conversations"],
     queryFn: async () => await getConversationForUser(),
     staleTime: 5 * 60 * 1000,
-    select: (conversation) => {
+    select: (conversation: { data: Conversation[] }) => {
       return conversation.data;
     },
   });
 
-  const { data: property, isLoading: propertyLoading } = useQuery({
+  const { data: property } = useQuery({
     queryKey: ["property", selectedConversation?.propertyId],
     queryFn: async () =>
       await getPropertyById(selectedConversation?.propertyId),
     enabled: !!selectedConversation?.propertyId,
-    select: (property) => {
+    select: (property: Property) => {
       return property.data;
     },
   });

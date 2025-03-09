@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { DashboardBuilder } from "@/components/DashboardBuilder";
-import { WidgetLibrary } from "@/components/WidgetLibrary";
+import { WidgetLibrary, Widget } from "@/components/WidgetLibrary";
 import { DataExportModal } from "@/components/DataExportModal";
 import { ScheduleReportModal } from "@/components/ScheduleReportModal";
 import { ComparisonTool } from "@/components/ComparisonTool";
@@ -16,9 +16,9 @@ export default function ReportsAndAnalyticsPage() {
   const [isDataExportModalOpen, setIsDataExportModalOpen] = useState(false);
   const [isScheduleReportModalOpen, setIsScheduleReportModalOpen] =
     useState(false);
-  const [widgets, setWidgets] = useState<any[]>([]);
+  const [widgets, setWidgets] = useState<Widget[]>([]);
 
-  const addWidget = (widget: any) => {
+  const addWidget = (widget: Widget) => {
     setWidgets([...widgets, widget]);
     setIsWidgetLibraryOpen(false);
   };

@@ -6,10 +6,18 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
+export interface Widget {
+  id: string;
+  type: string;
+  title: string;
+  data: Record<string, unknown>;
+  size?: 'small' | 'medium' | 'large';
+}
+
 type WidgetLibraryProps = {
   isOpen: boolean;
   onClose: () => void;
-  onAddWidget: (widget: any) => void;
+  onAddWidget: (widget: Widget) => void;
 };
 
 const widgetTypes = [
@@ -27,9 +35,10 @@ export function WidgetLibrary({
   onAddWidget,
 }: WidgetLibraryProps) {
   const handleAddWidget = (type: string) => {
-    const newWidget = {
+    const newWidget: Widget = {
       id: Date.now().toString(),
       type,
+      title: '',
       data: {
         labels: [
           "January",
