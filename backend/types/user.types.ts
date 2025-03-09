@@ -9,7 +9,7 @@ export interface IUser extends Document {
   phoneNumber?: string;
   role: "buyer" | "seller" | "agent" | "admin";
   profileImage?: string;
-  savedProperties?: Types.ObjectId[] | IProperty[];
+  savedProperties: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
   lastLogin?: Date;
