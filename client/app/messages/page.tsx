@@ -7,6 +7,7 @@ import { PropertySidebar } from "@/components/PropertySidebar";
 import { getConversationForUser } from "@/api/message.api";
 import { getPropertyById } from "@/api/property.api";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/context/AuthContext";
 
 interface Conversation {
   _id: string;
@@ -28,10 +29,10 @@ interface Property {
 }
 
 export default function MessagingPage() {
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [selectedConversation, setSelectedConversation] =
+    useState<Conversation | null>(null);
   const [showPropertySidebar, setShowPropertySidebar] = useState(true);
-
-  console.log(selectedConversation);
+  const { user } = useAuth();
 
   const { data: conversations } = useQuery({
     queryKey: ["conversations"],
@@ -52,6 +53,16 @@ export default function MessagingPage() {
     },
   });
 
+  // get the schedule visits status
+  const scheduleVisitsStatus = property?.scheduledVisits?.[0]?.status || "";
+
+  // show property sidebar if not realtor
+  const handleTogglePropertySidebar = () => {
+    if (user?.role !== "agent") {
+      setShowPropertySidebar(!showPropertySidebar);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
       <ConversationList
@@ -63,10 +74,12 @@ export default function MessagingPage() {
         {selectedConversation ? (
           <ChatArea
             conversation={selectedConversation}
-            onTogglePropertySidebar={() =>
-              setShowPropertySidebar(!showPropertySidebar)
-            }
+            onTogglePropertySidebar={handleTogglePropertySidebar}
             propertyTitle={property?.title}
+            showButtons={
+              scheduleVisitsStatus === "accepted" ||
+              scheduleVisitsStatus === "declined"
+            }
           />
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500">

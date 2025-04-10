@@ -30,7 +30,7 @@ interface PropertyData {
     area: number;
     yearBuilt?: number;
   };
-  [key: string]: any; // For any additional properties
+  [key: string]: unknown; // For any additional properties
 }
 
 export const createProperty = async (propertyData: PropertyData) => {
@@ -89,5 +89,36 @@ export const getSavedProperties = async () => {
     console.error("Error fetching saved properties:", error);
     // Return empty array as fallback
     return { properties: [] };
+  }
+};
+
+export const scheduleVisit = async (propertyId: string, scheduledDate: Date) => {
+  try {
+    const response = await api.post(`/property/${propertyId}/visit`, {
+      scheduledDate: scheduledDate.toISOString(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error scheduling visit:", error);
+    throw error;
+  }
+};
+
+export const updateVisitStatus = async (
+  propertyId: string,
+  userId: string,
+  scheduledDate: Date,
+  status: "accepted" | "declined"
+) => {
+  try {
+    const response = await api.patch(`/property/${propertyId}/visit/status`, {
+      userId,
+      scheduledDate: scheduledDate.toISOString(),
+      status,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating visit status:", error);
+    throw error;
   }
 };

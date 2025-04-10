@@ -4,17 +4,20 @@ export interface SendMessageInput {
   recipientId: string;
   propertyId?: string;
   content: string;
+  type?: "text" | "visit";
 }
 
 export const sendMessage = async ({
   recipientId,
   propertyId,
   content,
+  type = "text",
 }: SendMessageInput) => {
   try {
-    const response = await api.post("/conversations/send-message", {
+    const response = await api.post("/messages/send-message", {
       recipientId,
       propertyId,
+      type,
       content,
     });
 
@@ -48,9 +51,7 @@ export const getMessagesForConversation = async (conversationId: string) => {
 
 export const markMessageAsRead = async (messageIds: string | string[]) => {
   try {
-    const response = await api.post("/messages/mark-as-read", {
-      messageIds: Array.isArray(messageIds) ? messageIds : [messageIds],
-    });
+    const response = await api.patch(`/messages/${messageIds}`);
 
     return response.data;
   } catch (error) {

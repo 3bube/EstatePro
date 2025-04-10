@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { saveToken, removeToken } from "@/lib/localStorage";
 
 interface User {
-  id: string;
+  _id: string;
   email: string;
   firstName: string;
   lastName: string;
@@ -36,7 +36,11 @@ interface AuthContextType {
     lastName: string,
     role: string
   ) => Promise<void>;
-  login: (email: string, password: string, rememberMe?: boolean) => Promise<LoginResponse>;
+  login: (
+    email: string,
+    password: string,
+    rememberMe?: boolean
+  ) => Promise<LoginResponse>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -67,16 +71,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string, rememberMe: boolean = true): Promise<LoginResponse> => {
+  const login = async (
+    email: string,
+    password: string,
+    rememberMe: boolean = true
+  ): Promise<LoginResponse> => {
     try {
       const { data } = await api.post("/auth/login", { email, password });
       saveToken(data.token, rememberMe);
       setUser(data.data);
       setIsAuthenticated(true);
-      
+
       // Redirect to dashboard after successful login
       router.push("/dashboard");
-      
+
       // Return the response data so the component can handle redirection
       return data;
     } catch (error) {
