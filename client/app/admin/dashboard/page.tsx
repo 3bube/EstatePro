@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+// import { Calendar } from "@/components/ui/calendar";
 import { Bar, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -90,11 +90,13 @@ ChartJS.register(
 );
 
 export default function AdminDashboardPage() {
-  const [dateRange, setDateRange] = useState<Date[] | undefined>([
-    new Date(),
-    new Date(),
-  ]);
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  // const [dateRange, setDateRange] = useState<Date[] | undefined>([
+  //   new Date(),
+  //   new Date(),
+  // ]);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -118,40 +120,83 @@ export default function AdminDashboardPage() {
 
   // Prepare metrics data
   const metrics = [
-    { 
-      title: "Total Properties", 
-      value: loading ? "..." : dashboardData?.properties.total.toLocaleString() || "0", 
-      icon: Home 
+    {
+      title: "Total Properties",
+      value: loading
+        ? "..."
+        : dashboardData?.properties.total.toLocaleString() || "0",
+      icon: Home,
     },
-    { 
-      title: "Active Users", 
-      value: loading ? "..." : dashboardData?.users.total.toLocaleString() || "0", 
-      icon: Users 
+    {
+      title: "Active Users",
+      value: loading
+        ? "..."
+        : dashboardData?.users.total.toLocaleString() || "0",
+      icon: Users,
     },
-    { 
-      title: "Pending Approvals", 
-      value: loading ? "..." : dashboardData?.transactions.pending.toLocaleString() || "0", 
-      icon: Clock 
+    {
+      title: "Pending Approvals",
+      value: loading
+        ? "..."
+        : dashboardData?.transactions.pending.toLocaleString() || "0",
+      icon: Clock,
     },
-    { 
-      title: "Daily Transactions", 
-      value: loading ? "..." : `$${dashboardData?.transactions.value.toLocaleString() || "0"}`, 
-      icon: DollarSign 
+    {
+      title: "Daily Transactions",
+      value: loading
+        ? "..."
+        : `$${dashboardData?.transactions.value.toLocaleString() || "0"}`,
+      icon: DollarSign,
     },
   ];
 
   // Prepare recent activity data
-  const recentActivity = loading 
-    ? Array(5).fill({ action: "Loading...", user: "Loading...", time: "Loading..." })
-    : dashboardData?.recentActivity?.map((activity: DashboardData['recentActivity'][0]) => ({
-        action: "User login",
-        user: `${activity.firstName} ${activity.lastName}`,
-        time: new Date(activity.lastLogin).toLocaleString(),
-      })) || [];
+  const recentActivity = loading
+    ? Array(5).fill({
+        action: "Loading...",
+        user: "Loading...",
+        time: "Loading...",
+      })
+    : dashboardData?.recentActivity?.map(
+        (activity: DashboardData["recentActivity"][0]) => {
+          let time = "N/A";
+          try {
+            // Validate date string before attempting to create a Date object
+            if (activity.lastLogin && typeof activity.lastLogin === "string") {
+              const date = new Date(activity.lastLogin);
+              // Check if date is valid
+              if (!isNaN(date.getTime())) {
+                time = date.toLocaleString();
+              }
+            }
+          } catch (error) {
+            console.error("Error formatting date:", error);
+          }
+
+          return {
+            action: "User login",
+            user: `${activity.firstName} ${activity.lastName}`,
+            time,
+          };
+        }
+      ) || [];
 
   // Prepare chart data for user growth
   const userGrowthData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    labels: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ],
     datasets: [
       {
         label: "New Users",
@@ -165,7 +210,20 @@ export default function AdminDashboardPage() {
 
   // Prepare chart data for property listings
   const propertyListingsData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    labels: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ],
     datasets: [
       {
         label: "New Properties",
@@ -194,7 +252,10 @@ export default function AdminDashboardPage() {
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+          role="alert"
+        >
           <strong className="font-bold">Error! </strong>
           <span className="block sm:inline">{error}</span>
         </div>
@@ -229,7 +290,11 @@ export default function AdminDashboardPage() {
             {loading ? (
               <Skeleton className="h-[300px] w-full" />
             ) : (
-              <Bar data={userGrowthData} height={300} options={{ responsive: true }} />
+              <Bar
+                data={userGrowthData}
+                height={300}
+                options={{ responsive: true }}
+              />
             )}
           </CardContent>
         </Card>
@@ -241,7 +306,11 @@ export default function AdminDashboardPage() {
             {loading ? (
               <Skeleton className="h-[300px] w-full" />
             ) : (
-              <Line data={propertyListingsData} height={300} options={{ responsive: true }} />
+              <Line
+                data={propertyListingsData}
+                height={300}
+                options={{ responsive: true }}
+              />
             )}
           </CardContent>
         </Card>
@@ -254,24 +323,34 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {loading ? (
-                Array(5).fill(0).map((_, i) => (
-                  <div key={i} className="flex justify-between items-center">
-                    <Skeleton className="h-4 w-[250px]" />
-                    <Skeleton className="h-4 w-[100px]" />
-                  </div>
-                ))
-              ) : (
-                recentActivity.map((activity, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <div>
-                      <div className="font-medium">{activity.action}</div>
-                      <div className="text-sm text-gray-500">{activity.user}</div>
+              {loading
+                ? Array(5)
+                    .fill(0)
+                    .map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex justify-between items-center"
+                      >
+                        <Skeleton className="h-4 w-[250px]" />
+                        <Skeleton className="h-4 w-[100px]" />
+                      </div>
+                    ))
+                : recentActivity.map((activity, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center"
+                    >
+                      <div>
+                        <div className="font-medium">{activity.action}</div>
+                        <div className="text-sm text-gray-500">
+                          {activity.user}
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {activity.time}
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-500">{activity.time}</div>
-                  </div>
-                ))
-              )}
+                  ))}
             </div>
           </CardContent>
         </Card>
@@ -280,12 +359,12 @@ export default function AdminDashboardPage() {
             <CardTitle>Calendar</CardTitle>
           </CardHeader>
           <CardContent>
-            <Calendar
+            {/* <Calendar
               mode="range"
               selected={dateRange}
               onSelect={setDateRange}
               className="rounded-md border"
-            />
+            /> */}
           </CardContent>
         </Card>
       </div>
@@ -301,14 +380,23 @@ export default function AdminDashboardPage() {
             ) : (
               <div className="space-y-4">
                 {dashboardData?.usersByRole?.map((role, index) => (
-                  <div key={index} className="flex items-center justify-between">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex items-center">
-                      <div className="w-2 h-2 rounded-full mr-2" 
-                           style={{ backgroundColor: 
-                             role._id === 'admin' ? 'red' : 
-                             role._id === 'agent' ? 'blue' : 
-                             role._id === 'seller' ? 'green' : 'purple' 
-                           }} 
+                      <div
+                        className="w-2 h-2 rounded-full mr-2"
+                        style={{
+                          backgroundColor:
+                            role._id === "admin"
+                              ? "red"
+                              : role._id === "agent"
+                              ? "blue"
+                              : role._id === "seller"
+                              ? "green"
+                              : "purple",
+                        }}
                       />
                       <span className="capitalize">{role._id}</span>
                     </div>
@@ -329,14 +417,23 @@ export default function AdminDashboardPage() {
             ) : (
               <div className="space-y-4">
                 {dashboardData?.propertiesByStatus?.map((status, index) => (
-                  <div key={index} className="flex items-center justify-between">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex items-center">
-                      <div className="w-2 h-2 rounded-full mr-2" 
-                           style={{ backgroundColor: 
-                             status._id === 'active' ? 'green' : 
-                             status._id === 'pending' ? 'orange' : 
-                             status._id === 'sold' ? 'blue' : 'gray' 
-                           }} 
+                      <div
+                        className="w-2 h-2 rounded-full mr-2"
+                        style={{
+                          backgroundColor:
+                            status._id === "active"
+                              ? "green"
+                              : status._id === "pending"
+                              ? "orange"
+                              : status._id === "sold"
+                              ? "blue"
+                              : "gray",
+                        }}
                       />
                       <span className="capitalize">{status._id}</span>
                     </div>
