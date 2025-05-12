@@ -75,9 +75,9 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
         <div>
           <AgentContact owner={property?.owner} />
           <div className="mt-4 space-y-4">
-            <button className="w-full bg-[#2C3E50] text-white py-2 px-4 rounded hover:bg-[#34495E]">
+            {/* <button className="w-full bg-[#2C3E50] text-white py-2 px-4 rounded hover:bg-[#34495E]">
               Schedule Visit
-            </button>
+            </button> */}
             <button
               className="w-full bg-white text-[#2C3E50] border border-[#2C3E50] py-2 px-4 rounded hover:bg-gray-50"
               onClick={() => handleMessage()}
