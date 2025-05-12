@@ -13,7 +13,8 @@ interface IMessageData {
 export const createMessage = async (
   messageData: IMessage,
   propertyId: string,
-  senderId: string
+  senderId: string,
+  type: "text" | "visit" = "text"
 ) => {
   try {
     const { recipientId, content } = messageData;
@@ -31,13 +32,12 @@ export const createMessage = async (
       });
     }
 
-    console.log("creating message");
-
     const message = await MessageModel.create({
       conversation: conversation._id,
       sender: senderId,
       recipientId,
       content,
+      type,
       read: false,
     });
 
@@ -91,7 +91,7 @@ export const readMessage = async (messageId: string, currentUserId: string) => {
     if (!message) {
       throw new AppError("Message not found", 404);
     }
-    
+
     // Only mark as read if the current user is the recipient
     if (message.recipientId.toString() === currentUserId) {
       message.read = true;
@@ -100,7 +100,7 @@ export const readMessage = async (messageId: string, currentUserId: string) => {
     } else {
       console.log("User is not the recipient of this message");
     }
-    
+
     return message;
   } catch (error) {
     throw new AppError("Failed to read message", 500);

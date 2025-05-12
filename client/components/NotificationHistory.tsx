@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+// import { formatDistanceToNow } from "date-fns";
 import {
   Table,
   TableBody,
@@ -79,11 +79,11 @@ export function NotificationHistory() {
             <TableRow key={notification.id}>
               <TableCell>{notification.title}</TableCell>
               <TableCell>{notification.category}</TableCell>
-              <TableCell>
+              {/* <TableCell>
                 {formatDistanceToNow(new Date(notification.timestamp), {
                   addSuffix: true,
                 })}
-              </TableCell>
+              </TableCell> */}
             </TableRow>
           ))}
         </TableBody>

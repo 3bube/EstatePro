@@ -1,5 +1,30 @@
 import mongoose from "mongoose";
-import { IProperty } from "../types/property.types";
+import { IProperty, IVisitSchedule } from "../types/property.types";
+
+const VisitScheduleSchema = new mongoose.Schema<IVisitSchedule>(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    scheduledDate: {
+      type: Date,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["accepted", "declined", "pending"],
+      default: "pending",
+    },
+    notes: { type: String },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: true }
+);
 
 const PropertySchema = new mongoose.Schema<IProperty>({
   title: { type: String, required: true },
@@ -40,6 +65,11 @@ const PropertySchema = new mongoose.Schema<IProperty>({
   isFeatured: { type: Boolean, default: false },
   availableFrom: { type: Date },
   yearBuilt: { type: Number },
+  // Add the scheduledVisits array
+  scheduledVisits: {
+    type: [VisitScheduleSchema],
+    default: [],
+  },
 });
 
 const PropertyModel = mongoose.model<IProperty>("Property", PropertySchema);

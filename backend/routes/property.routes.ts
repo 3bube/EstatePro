@@ -7,6 +7,8 @@ import {
   removeProperty,
   getAllProperties,
   getPropertiesForUser,
+  schedulePropertyVisit,
+  updateVisitStatus,
 } from "../controllers/property.controller";
 import { getRecommendedProperties } from "../controllers/dashboard.controller";
 
@@ -19,5 +21,6 @@ router.get("/recommended", authenticate, getRecommendedProperties);
 router.get("/:id", getProperty);
 router.put("/:id", authenticate, changeProperty);
 router.delete("/:id", authenticate, removeProperty);
-
+router.post("/:id/visit", authenticate, schedulePropertyVisit);
+router.patch("/:id/visit/status", authenticate, updateVisitStatus);
 export default router;

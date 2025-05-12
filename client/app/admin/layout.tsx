@@ -19,9 +19,9 @@ export default function AdminLayout({
     { name: "Properties", icon: Home, href: "/admin/properties" },
     { name: "Users", icon: Users, href: "/admin/users" },
     // { name: "Transactions", icon: DollarSign, href: "/admin/transactions" },
-    { name: "Roles & Access", icon: Shield, href: "/admin/roles" },
-    { name: "Notifications", icon: Bell, href: "/notifications" },
-    { name: "Reports", icon: BarChart2, href: "/admin/reports" },
+    // { name: "Roles & Access", icon: Shield, href: "/admin/roles" },
+    // { name: "Notifications", icon: Bell, href: "/notifications" },
+    // { name: "Reports", icon: BarChart2, href: "/admin/reports" },
     // { name: "Settings", icon: Settings, href: "/admin/settings" },
   ];
 

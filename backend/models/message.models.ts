@@ -17,6 +17,7 @@ const MessageSchema = new mongoose.Schema<IMessage>({
     ref: "User",
     required: true,
   },
+  type: { type: String, enum: ["text", "visit"], default: "text" },
   content: { type: String, required: true },
   attachments: { type: [String], required: false },
   read: { type: Boolean, default: false },

@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from "date-fns";
+// import { formatDistanceToNow } from "date-fns";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,11 +43,11 @@ export function NotificationItem({
             {notification.priority}
           </Badge>
         </div>
-        <div className="mt-2 text-sm text-gray-500">
+        {/* <div className="mt-2 text-sm text-gray-500">
           {formatDistanceToNow(new Date(notification.timestamp), {
             addSuffix: true,
           })}
-        </div>
+        </div> */}
       </CardContent>
       <CardFooter className="bg-gray-50 px-4 py-2 flex justify-between">
         <div className="space-x-2">

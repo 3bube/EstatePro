@@ -1,3 +1,13 @@
+import mongoose from "mongoose";
+
+export interface IVisitSchedule {
+  user: mongoose.Types.ObjectId | string;
+  scheduledDate: Date;
+  status: "accepted" | "declined" | "pending";
+  notes?: string;
+  createdAt?: Date;
+}
+
 export interface IProperty {
   title: string;
   description: string;
@@ -23,16 +33,17 @@ export interface IProperty {
   status: "active" | "pending" | "sold" | "rented";
   bedrooms: number;
   bathrooms: number;
-  area: number; // square footage
+  area: number;
   features: string[];
   amenities: string[];
-  images: string[]; // URLs to uploaded images
-  yearBuilt?: number;
-  owner: mongoose.Types.ObjectId; // Reference to User
-  agent?: mongoose.Types.ObjectId; // Reference to User (if applicable)
+  images: string[];
+  owner: mongoose.Types.ObjectId;
+  agent?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
   views: number;
   isFeatured: boolean;
   availableFrom?: Date;
+  yearBuilt?: number;
+  scheduledVisits: IVisitSchedule[];
 }

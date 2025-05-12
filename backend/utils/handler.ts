@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "./AppError";
 import { logger } from "./logger";
-import { IUser } from "../types/user.types";
+import { IUser } from "../models/user.models";
 
 export interface AuthenticatedRequest extends Request {
   user?: IUser;

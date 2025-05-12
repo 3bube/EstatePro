@@ -124,28 +124,28 @@ export default function AdminDashboardPage() {
       title: "Total Properties",
       value: loading
         ? "..."
-        : dashboardData?.properties.total.toLocaleString() || "0",
+        : dashboardData?.properties?.total.toLocaleString() || "0",
       icon: Home,
     },
     {
       title: "Active Users",
       value: loading
         ? "..."
-        : dashboardData?.users.total.toLocaleString() || "0",
+        : dashboardData?.users?.total.toLocaleString() || "0",
       icon: Users,
     },
     {
       title: "Pending Approvals",
       value: loading
         ? "..."
-        : dashboardData?.transactions.pending.toLocaleString() || "0",
+        : dashboardData?.transactions?.pending.toLocaleString() || "0",
       icon: Clock,
     },
     {
       title: "Daily Transactions",
       value: loading
         ? "..."
-        : `$${dashboardData?.transactions.value.toLocaleString() || "0"}`,
+        : `$${dashboardData?.transactions?.value.toLocaleString() || "0"}`,
       icon: DollarSign,
     },
   ];
@@ -240,14 +240,14 @@ export default function AdminDashboardPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <div className="flex space-x-2">
-          <Button variant="outline">
+          {/* <Button variant="outline">
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
           <Button>
             <Plus className="h-4 w-4 mr-2" />
             New Report
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -354,19 +354,19 @@ export default function AdminDashboardPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle>Calendar</CardTitle>
           </CardHeader>
           <CardContent>
-            {/* <Calendar
+            <Calendar
               mode="range"
               selected={dateRange}
               onSelect={setDateRange}
               className="rounded-md border"
-            /> */}
+            />
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

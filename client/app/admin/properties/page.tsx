@@ -181,10 +181,10 @@ export default function PropertiesManagementPage() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Property Management</h1>
-        <Button>
+        {/* <Button>
           <Home className="h-4 w-4 mr-2" />
           Add Property
-        </Button>
+        </Button> */}
       </div>
 
       {error && (

@@ -11,14 +11,15 @@ import { IMessage } from "../types/message.types";
 export const sendMessage = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { recipientId, content, propertyId } = req.body;
+      const { recipientId, content, propertyId, type } = req.body;
 
       console.log(recipientId, content);
       const senderId = req.user.id;
       const message = await createMessage(
         { recipientId, content } as IMessage,
         propertyId,
-        senderId
+        senderId,
+        type
       );
       res.status(201).json({
         success: true,
