@@ -98,7 +98,7 @@ export function PropertySidebar({ property }: PropertySidebarProps) {
           <span>{property?.bathrooms} baths</span>
           <span>{property?.area?.toLocaleString()} sqft</span>
         </div>
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <button className="w-full bg-[#2C3E50] text-white py-2 px-4 rounded hover:bg-[#34495E]">
@@ -120,7 +120,7 @@ export function PropertySidebar({ property }: PropertySidebarProps) {
           <button className="w-full bg-white text-[#2C3E50] border border-[#2C3E50] py-2 px-4 rounded hover:bg-gray-50">
             Make Offer
           </button>
-        </div>
+        </div> */}
       </div>
     </aside>
   );

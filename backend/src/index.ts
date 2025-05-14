@@ -108,7 +108,7 @@ app.use(errorHandler);
 
 // Single server instance based on environment
 const PORT =
-  process.env.PORT || (process.env.NODE_ENV !== "production" ? 5000 : 8000);
+  process.env.PORT || (process.env.NODE_ENV !== "production" ? 5003 : 8000);
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

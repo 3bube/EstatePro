@@ -29,8 +29,8 @@ export default function DashboardPage() {
       <main className="flex-1 p-8">
         <WelcomeSection userName={user?.firstName} />
         <QuickStats userType={userType} />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-          <ActivityFeed />
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-8 mt-8">
+          {/* <ActivityFeed /> */}
           <RecommendedProperties />
         </div>
         {userType === "seeker" && <SavedSearches />}

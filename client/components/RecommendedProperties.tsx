@@ -80,7 +80,7 @@ export function RecommendedProperties() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-6 rounded-lg shadow-md ">
       <h2 className="text-xl font-semibold text-[#2C3E50] mb-4">
         Recommended Properties
       </h2>
