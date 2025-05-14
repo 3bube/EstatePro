@@ -73,10 +73,10 @@ export function ListingCard({ listing, status }: ListingCardProps) {
         </div>
         <ListingAnalytics listing={listing} />
       </CardContent>
-      <CardFooter className="flex justify-between">
+      {/* <CardFooter className="flex justify-between">
         <Button variant="outline">Edit</Button>
         <Button variant="outline">Delete</Button>
-      </CardFooter>
+      </CardFooter> */}
     </Card>
   );
 }

@@ -9,9 +9,12 @@ import { SavedSearches } from "@/components/SavedSearches";
 import { ListingStats } from "@/components/ListingStats";
 import { useAuth } from "@/context/AuthContext";
 import { getProperties } from "@/api/property.api";
+import { getConversations as fetchConversations } from "@/api/conversation.api";
+import { getUserDashboard } from "@/api/dashboard.api";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Calendar, MessageSquare, Home } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Define interfaces for our data structures
 interface Visit {
@@ -58,24 +61,28 @@ interface Conversation {
   updatedAt: Date;
 }
 
-// Simplified conversation API function for the dashboard
-const getConversations = async (): Promise<Conversation[]> => {
-  try {
-    const response = await fetch('/api/conversations');
-    if (!response.ok) {
-      throw new Error('Failed to fetch conversations');
-    }
-    const data = await response.json();
-    return data.data || [];
-  } catch (error) {
-    console.error("Error fetching conversations:", error);
-    return [];
-  }
-};
+interface DashboardStats {
+  user: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+  };
+  stats: {
+    propertiesCount: number;
+    conversationsCount: number;
+    visitsCount: number;
+    pendingVisitsCount: number;
+    acceptedVisitsCount: number;
+  };
+  recentActivity?: Array<Record<string, unknown>>;
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const [userType, setUserType] = useState<"seeker" | "realtor">("seeker");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (user?.role === "buyer" || user?.role === "renter") {
@@ -85,36 +92,54 @@ export default function DashboardPage() {
     }
   }, [user?.role]);
 
+  // Fetch dashboard data
+  const { data: dashboardData, isLoading: isDashboardLoading } = useQuery<DashboardStats>({
+    queryKey: ["dashboard"],
+    queryFn: getUserDashboard,
+    enabled: !!user,
+  });
+
   // Fetch conversations
-  const { data: conversations } = useQuery<Conversation[]>({
+  const { data: conversations, isLoading: isConversationsLoading } = useQuery<Conversation[]>({
     queryKey: ["conversations"],
-    queryFn: getConversations,
+    queryFn: fetchConversations,
     enabled: !!user,
   });
 
   // Fetch properties
-  const { data: properties } = useQuery<{ data: Property[] }>({
+  const { data: properties, isLoading: isPropertiesLoading } = useQuery<{ data: Property[] }>({
     queryKey: ["properties"],
     queryFn: getProperties,
     enabled: !!user,
   });
 
-  // Calculate stats
-  const unreadMessagesCount = conversations?.filter(
-    (convo: Conversation) => convo.unreadCount > 0
-  ).length || 0;
+  // Update loading state when all queries complete
+  useEffect(() => {
+    if (!isDashboardLoading && !isConversationsLoading && !isPropertiesLoading) {
+      setIsLoading(false);
+    }
+  }, [isDashboardLoading, isConversationsLoading, isPropertiesLoading]);
+
+  // Calculate stats from API data or use dashboard stats if available
+  const unreadMessagesCount = dashboardData?.stats?.conversationsCount
+    ? dashboardData.stats.conversationsCount
+    : conversations?.filter((convo: Conversation) => convo.unreadCount > 0).length || 0;
   
-  const pendingVisitsCount = properties?.data?.filter(
-    (property: Property) => 
-      property.scheduledVisits && 
-      property.scheduledVisits.some((visit: Visit) => visit.status === "pending")
-  ).length || 0;
+  const pendingVisitsCount = dashboardData?.stats?.pendingVisitsCount
+    ? dashboardData.stats.pendingVisitsCount
+    : properties?.data?.filter(
+        (property: Property) => 
+          property.scheduledVisits && 
+          property.scheduledVisits.some((visit: Visit) => visit.status === "pending")
+      ).length || 0;
   
-  const acceptedVisitsCount = properties?.data?.filter(
-    (property: Property) => 
-      property.scheduledVisits && 
-      property.scheduledVisits.some((visit: Visit) => visit.status === "accepted")
-  ).length || 0;
+  const acceptedVisitsCount = dashboardData?.stats?.acceptedVisitsCount
+    ? dashboardData.stats.acceptedVisitsCount
+    : properties?.data?.filter(
+        (property: Property) => 
+          property.scheduledVisits && 
+          property.scheduledVisits.some((visit: Visit) => visit.status === "accepted")
+      ).length || 0;
 
   // Format upcoming visit dates
   const upcomingVisits: UpcomingVisit[] = properties?.data
@@ -131,6 +156,66 @@ export default function DashboardPage() {
     .sort((a: UpcomingVisit, b: UpcomingVisit) => a.scheduledDate.getTime() - b.scheduledDate.getTime())
     .slice(0, 3) || [];
 
+  // Loading state UI
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-gray-100">
+        <DashboardSidebar userType={userType} />
+        <main className="flex-1 p-8">
+          <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+            <Skeleton className="h-8 w-64 mb-2" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          
+          {/* Summary Cards Skeletons */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-6 w-6 rounded-full" />
+                </div>
+                <div className="mt-4">
+                  <Skeleton className="h-10 w-16 mb-2" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Other Skeletons */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <Skeleton className="h-6 w-48 mb-4" />
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center space-x-4">
+                    <Skeleton className="h-12 w-12 rounded" />
+                    <div className="flex-1">
+                      <Skeleton className="h-4 w-3/4 mb-2" />
+                      <Skeleton className="h-3 w-1/4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <Skeleton className="h-6 w-48 mb-4" />
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="border-b pb-2">
+                    <Skeleton className="h-4 w-3/4 mb-2" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <DashboardSidebar userType={userType} />
@@ -145,7 +230,7 @@ export default function DashboardPage() {
               <MessageSquare className="h-6 w-6 text-blue-500" />
             </div>
             <div className="mt-4">
-              <p className="text-3xl font-bold">{conversations?.length || 0}</p>
+              <p className="text-3xl font-bold">{dashboardData?.stats?.conversationsCount || conversations?.length || 0}</p>
               <div className="flex mt-2">
                 {unreadMessagesCount > 0 && (
                   <Badge className="bg-red-500">
@@ -168,7 +253,7 @@ export default function DashboardPage() {
               <Home className="h-6 w-6 text-green-500" />
             </div>
             <div className="mt-4">
-              <p className="text-3xl font-bold">{properties?.data?.length || 0}</p>
+              <p className="text-3xl font-bold">{dashboardData?.stats?.propertiesCount || properties?.data?.length || 0}</p>
               <Link 
                 href="/properties" 
                 className="text-blue-500 hover:underline text-sm mt-4 inline-block"
@@ -184,7 +269,7 @@ export default function DashboardPage() {
               <Calendar className="h-6 w-6 text-purple-500" />
             </div>
             <div className="mt-4">
-              <p className="text-3xl font-bold">{pendingVisitsCount + acceptedVisitsCount}</p>
+              <p className="text-3xl font-bold">{dashboardData?.stats?.visitsCount || (pendingVisitsCount + acceptedVisitsCount)}</p>
               <div className="flex gap-2 mt-2">
                 {pendingVisitsCount > 0 && (
                   <Badge className="bg-yellow-500">
@@ -220,7 +305,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
                   <Link 
-                    href={`/properties/${visit.propertyId}`}
+                    href={`/property/${visit.propertyId}`}
                     className="text-blue-500 hover:underline text-sm"
                   >
                     View property
@@ -231,7 +316,7 @@ export default function DashboardPage() {
           </div>
         )}
         
-        {/* Keep other components as needed */}
+        {/* Additional Components */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <RecommendedProperties />
           {userType === "seeker" && <SavedSearches />}

@@ -1,6 +1,7 @@
 import PropertyModel from "../models/property.models";
-import { IProperty } from "../types/property.types";
+import { IProperty, IVisitSchedule } from "../types/property.types";
 import { AppError } from "../utils/AppError";
+import mongoose from "mongoose";
 
 export const createProperty = async (
   propertyData: Partial<IProperty>
@@ -17,6 +18,8 @@ export const getPropertyById = async (
   id: string
 ): Promise<IProperty | null> => {
   try {
+
+    console.log("id", id);
     const property = await PropertyModel.findById(id).populate({
       path: "owner",
       select: "firstName lastName email phoneNumber role",
@@ -166,5 +169,81 @@ export const acceptOrDeclineVisit = async (
   } catch (error) {
     console.error("Error in acceptOrDeclineVisit:", error);
     throw new AppError("Failed to accept or decline visit", 500);
+  }
+};
+
+
+// Get scheduled visits for a user with complete property details
+export const getScheduledVisitsByUserId = async (
+  userId: string
+): Promise<any[]> => {
+  try {
+    console.log(`Finding visits for user: ${userId}`);
+    
+    // Find all properties that have scheduled visits for this user
+    const properties = await PropertyModel.find({ 'scheduledVisits.user': userId })
+      .populate({
+        path: 'owner',
+        select: 'firstName lastName email'
+      })
+      .lean();
+    
+    console.log(`Found ${properties.length} properties with visits for user`);
+    
+    // Create an array to hold visit objects with property details
+    const userVisits = [];
+    
+    // Process each property and extract the visits for this user
+    for (const property of properties) {
+      if (!property.scheduledVisits || !Array.isArray(property.scheduledVisits)) {
+        console.log(`Property ${property._id} has no scheduledVisits array`);
+        continue;
+      }
+      
+      // Filter visits for this specific user
+      const visitsForUser = property.scheduledVisits.filter(visit => {
+        // Handle both string and ObjectId comparisons
+        const visitUserId = typeof visit.user === 'object' ? 
+          visit.user.toString() : 
+          visit.user;
+        
+        return visitUserId === userId;
+      });
+      
+      console.log(`Found ${visitsForUser.length} visits for user in property ${property._id}`);
+      
+      // Add property details to each visit
+      for (const visit of visitsForUser) {
+        // Use type assertion to tell TypeScript that the visit has an _id field
+        // This is safe because MongoDB documents always have _id fields
+        const visitWithId = visit as unknown as { _id: string | mongoose.Types.ObjectId };
+        
+        userVisits.push({
+          _id: visitWithId._id,
+          user: visit.user,
+          scheduledDate: visit.scheduledDate,
+          status: visit.status,
+          notes: visit.notes,
+          createdAt: visit.createdAt,
+          // Include essential property details
+          property: {
+            _id: property._id,
+            title: property.title,
+            address: property.address,
+            propertyType: property.propertyType,
+            bedrooms: property.bedrooms,
+            bathrooms: property.bathrooms,
+            price: property.price,
+            images: property.images && property.images.length > 0 ? [property.images[0]] : []
+          }
+        });
+      }
+    }
+    
+    console.log(`Returning ${userVisits.length} total visits for user`);
+    return userVisits;
+  } catch (error) {
+    console.error("Error in getScheduledVisitsByUserId:", error);
+    throw new AppError("Failed to get scheduled visits for user", 500);
   }
 };

@@ -22,11 +22,11 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
     },
     { name: "Scheduled Visits", icon: Timer, href: "/dashboard/visits" },
     // { name: "Profile Settings", icon: GearIcon, href: "/dashboard/settings" },
-    {
-      name: "Notifications",
-      icon: BellSimpleIcon,
-      href: "/dashboard/notifications",
-    },
+    // {
+    //   name: "Notifications",
+    //   icon: BellSimpleIcon,
+    //   href: "/dashboard/notifications",
+    // },
   ];
 
   if (userType === "realtor") {

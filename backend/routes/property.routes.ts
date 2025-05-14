@@ -9,6 +9,7 @@ import {
   getPropertiesForUser,
   schedulePropertyVisit,
   updateVisitStatus,
+  getScheduledVisits,
 } from "../controllers/property.controller";
 import { getRecommendedProperties } from "../controllers/dashboard.controller";
 
@@ -18,6 +19,8 @@ router.post("/create", authenticate, saveProperty);
 router.get("/all", getAllProperties);
 router.get("/user", authenticate, getPropertiesForUser);
 router.get("/recommended", authenticate, getRecommendedProperties);
+// This route needs to be BEFORE the /:id route to avoid the ID parameter catching 'visits'
+router.get("/visits", authenticate, getScheduledVisits);
 router.get("/:id", getProperty);
 router.put("/:id", authenticate, changeProperty);
 router.delete("/:id", authenticate, removeProperty);

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export interface IVisitSchedule {
-  user: mongoose.Types.ObjectId | string;
+  user: mongoose.Types.ObjectId | string | undefined;
   scheduledDate: Date;
   status: "accepted" | "declined" | "pending";
   notes?: string;

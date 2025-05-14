@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSavedProperties } from "@/api/property.api";
-import { getRealtorListingStats } from "@/api/dashboard.api";
+import { getSavedProperties, getPropertyByUserId } from "@/api/property.api";
+import { getRealtorListingStats, getUserDashboard } from "@/api/dashboard.api";
 
 type QuickStatsProps = {
   userType: "seeker" | "realtor";
@@ -21,17 +21,67 @@ export function QuickStats({ userType }: QuickStatsProps) {
         setLoading(true);
         
         if (userType === "seeker") {
-          // Fetch saved properties count
-          const savedPropertiesData = await getSavedProperties();
-          setSavedPropertiesCount(savedPropertiesData?.properties?.length || 0);
+          // Attempt to get comprehensive dashboard data first
+          const dashboardData = await getUserDashboard().catch(() => null);
           
-          // For now, we'll use a placeholder for upcoming visits
-          setUpcomingVisitsCount(3);
+          if (dashboardData) {
+            // Use the dashboard API data if available
+            setSavedPropertiesCount(dashboardData.savedProperties?.length || 0);
+            setUpcomingVisitsCount(dashboardData.upcomingVisits?.length || 0);
+          } else {
+            // Fall back to individual API calls
+            const savedPropertiesData = await getSavedProperties().catch(() => ({ properties: [] }));
+            setSavedPropertiesCount(savedPropertiesData?.properties?.length || 0);
+            
+            // Try to get upcoming visits from properties with scheduled visits
+            try {
+              const userVisitsResponse = await fetch("/api/user/visits");
+              if (userVisitsResponse.ok) {
+                const visitsData = await userVisitsResponse.json();
+                setUpcomingVisitsCount(visitsData?.visits?.filter((v: { status: string }) => v.status === "accepted")?.length || 0);
+              }
+            } catch (e) {
+              console.error("Could not fetch visits, using fallback count", e);
+              setUpcomingVisitsCount(0);
+            }
+          }
         } else {
-          // Fetch realtor listing stats
-          const listingStats = await getRealtorListingStats();
-          setActiveListings(listingStats?.activeListings || 0);
-          setPendingSales(listingStats?.pendingSales || 0);
+          // For realtors/agents, fetch both listing stats and properties to get the most accurate count
+          const [listingStats, propertiesResponse] = await Promise.all([
+            getRealtorListingStats().catch(() => ({
+              activeListings: 0,
+              pendingSales: 0
+            })),
+            getPropertyByUserId().catch(() => ({ data: [] }))
+          ]);
+          
+          if (listingStats && Object.keys(listingStats).length > 0) {
+            // Use the dedicated stats API if available
+            setActiveListings(listingStats.activeListings || 0);
+            setPendingSales(listingStats.pendingSales || 0);
+          } else if (propertiesResponse && propertiesResponse.data) {
+            // If stats API fails, calculate from properties data
+            const properties = propertiesResponse.data;
+            const activeCount = properties.filter((p: { status: string }) => p.status === "active").length;
+            const pendingCount = properties.filter((p: { status: string }) => p.status === "pending").length;
+            
+            setActiveListings(activeCount);
+            setPendingSales(pendingCount);
+          }
+          
+          // Also get pending visit requests count for agents
+          try {
+            const pendingVisits = propertiesResponse.data
+              .flatMap((property: { scheduledVisits?: Array<{ status: string }> }) => property.scheduledVisits || [])
+              .filter((visit: { status: string }) => visit.status === "pending").length;
+              
+            // If there are pending visits, update pendingSales to include them
+            if (pendingVisits > 0) {
+              setPendingSales(prev => prev + pendingVisits);
+            }
+          } catch (e) {
+            console.error("Error calculating pending visits", e);
+          }
         }
       } catch (error) {
         console.error("Error fetching quick stats:", error);
@@ -51,7 +101,7 @@ export function QuickStats({ userType }: QuickStatsProps) {
         ]
       : [
           { name: "Active Listings", value: activeListings },
-          { name: "Pending Sales", value: pendingSales },
+          { name: "Pending Requests", value: pendingSales },
         ];
 
   return (

@@ -9,6 +9,7 @@ import {
   getPropertyByUserId,
   scheduleVisit,
   acceptOrDeclineVisit,
+  getScheduledVisitsByUserId,
 } from "../services/property.services";
 
 export const saveProperty = catchAsync(async (req: Request, res: Response) => {
@@ -92,18 +93,18 @@ export const schedulePropertyVisit = catchAsync(
 export const updateVisitStatus = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const propertyId = req.params.id;
-    const { scheduledDate, status } = req.body;
+    const { visitorId, scheduledDate, status } = req.body;
 
-    if (!scheduledDate || !status) {
+    if (!visitorId || !scheduledDate || !status) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: userId, scheduledDate, status",
+        message: "Missing required fields: visitorId, scheduledDate, status",
       });
     }
 
     const property = await acceptOrDeclineVisit(
       propertyId,
-      req.user.id,
+      visitorId,
       new Date(scheduledDate),
       status
     );
@@ -112,5 +113,23 @@ export const updateVisitStatus = catchAsync(
       success: true,
       data: property,
     });
+  }
+);
+
+
+// Get all scheduled visits for the current user
+export const getScheduledVisits = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user._id;
+
+    console.log("userId", userId);
+
+    console.log(`Getting scheduled visits for user: ${userId}`);
+    const visits = await getScheduledVisitsByUserId(userId.toString());
+
+    console.log("visits", visits);
+    
+    console.log(`Returning ${visits.length} visits to client`);
+    res.status(200).json(visits);
   }
 );

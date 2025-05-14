@@ -92,10 +92,12 @@ export const getSavedProperties = async () => {
   }
 };
 
-export const scheduleVisit = async (propertyId: string, scheduledDate: Date) => {
+export const scheduleVisit = async (propertyId: string, scheduledDate: Date, notes?: string) => {
   try {
     const response = await api.post(`/property/${propertyId}/visit`, {
       scheduledDate: scheduledDate.toISOString(),
+      notes,
+      notifyOwner: true, // Explicitly request owner notification
     });
     return response.data;
   } catch (error) {
@@ -104,7 +106,33 @@ export const scheduleVisit = async (propertyId: string, scheduledDate: Date) => 
   }
 };
 
+/**
+ * Updates the status of a scheduled visit (accept/decline)
+ * @param propertyId - ID of the property
+ * @param visitorId - ID of the user who requested the visit
+ * @param scheduledDate - The date of the scheduled visit
+ * @param status - New status (accepted/declined)
+ */
 export const updateVisitStatus = async (
+  propertyId: string,
+  visitorId: string,
+  scheduledDate: Date,
+  status: "accepted" | "declined"
+) => {
+  try {
+    const response = await api.patch(`/property/${propertyId}/visit/status`, {
+      visitorId,
+      scheduledDate: scheduledDate.toISOString(),
+      status,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating visit status:", error);
+    throw error;
+  }
+};
+
+export const updateVisitStatusOwner = async (
   propertyId: string,
   userId: string,
   scheduledDate: Date,
@@ -119,6 +147,19 @@ export const updateVisitStatus = async (
     return response.data;
   } catch (error) {
     console.error("Error updating visit status:", error);
+    throw error;
+  }
+};
+
+
+export const getScheduledVisits = async () => {
+  try {
+    const response = await api.get("/property/visits");
+
+    
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching scheduled visits:", error);
     throw error;
   }
 };

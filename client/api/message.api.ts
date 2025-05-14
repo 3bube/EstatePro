@@ -59,3 +59,16 @@ export const markMessageAsRead = async (messageIds: string | string[]) => {
     throw error;
   }
 };
+
+
+// fetch conversations for user
+export const fetchConversations = async () => {
+  try {
+    const response = await api.get("/messages");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching conversations:", error);
+    throw error;
+  }
+};
+  

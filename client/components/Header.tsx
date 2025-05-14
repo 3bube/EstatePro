@@ -18,7 +18,7 @@ function Header() {
           EstatePro
         </Link>
         <div className="flex items-center space-x-6">
-          <Link href="/" className="hover:text-[#E74C3C] transition-colors">
+          <Link href="/home" className="hover:text-[#E74C3C] transition-colors">
             Home
           </Link>
           <Link

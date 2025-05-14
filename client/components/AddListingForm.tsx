@@ -20,14 +20,52 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-// import { format } from "date-fns";
+// Manual date formatting below; date-fns not used.
 import { CalendarIcon, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import UploadImage from "./UploadImage";
 
+type PropertyFormData = {
+  title: string;
+  description: string;
+  price: string | number;
+  propertyType: string;
+  status: string;
+  bedrooms: string | number;
+  bathrooms: string | number;
+  area: string | number;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+    coordinates: {
+      latitude: string | number;
+      longitude: string | number;
+    };
+  };
+  features: string[];
+  amenities: string[];
+  images: string[];
+  isFeatured: boolean;
+  availableFrom?: Date | null;
+  yearBuilt?: string | number;
+};
+
 interface AddListingFormProps {
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: PropertyFormData) => Promise<void>;
   isLoading?: boolean;
+}
+
+function formatDate(date: Date) {
+  if (!date) return "";
+  // Example: May 14, 2025
+  return date.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
 }
 
 export function AddListingForm({
@@ -432,7 +470,7 @@ export function AddListingForm({
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {formData.availableFrom ? (
-                    format(formData.availableFrom, "PPP")
+                    formatDate(formData.availableFrom)
                   ) : (
                     <span>Pick a date</span>
                   )}
@@ -445,7 +483,6 @@ export function AddListingForm({
                   onSelect={(date) =>
                     setFormData((prev) => ({ ...prev, availableFrom: date }))
                   }
-                  initialFocus
                 />
               </PopoverContent>
             </Popover>

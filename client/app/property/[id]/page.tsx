@@ -13,6 +13,7 @@ import { PropertyReviews } from "@/components/PropertyReviews";
 import { useQuery } from "@tanstack/react-query";
 import { getPropertyById } from "@/api/property.api";
 import { MessageModal } from "@/components/MessageModal";
+import { ScheduleVisitModal } from "@/components/ScheduleVisitModal";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Spinner from "@/components/Spinner";
@@ -24,6 +25,7 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
   const { isAuthenticated } = useAuth();
 
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [isScheduleVisitModalOpen, setIsScheduleVisitModalOpen] = useState(false);
 
   const router = useRouter();
 
@@ -36,6 +38,17 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
       return router.push("/auth");
     }
     setIsMessageModalOpen(true);
+  };
+  
+  const handleScheduleVisit = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "You need to be logged in",
+        description: "Please login to schedule a visit",
+      });
+      return router.push("/auth");
+    }
+    setIsScheduleVisitModalOpen(true);
   };
 
   const { data, isLoading } = useQuery({
@@ -75,9 +88,12 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
         <div>
           <AgentContact owner={property?.owner} />
           <div className="mt-4 space-y-4">
-            {/* <button className="w-full bg-[#2C3E50] text-white py-2 px-4 rounded hover:bg-[#34495E]">
+            <button 
+              className="w-full bg-[#2C3E50] text-white py-2 px-4 rounded hover:bg-[#34495E]"
+              onClick={handleScheduleVisit}
+            >
               Schedule Visit
-            </button> */}
+            </button>
             <button
               className="w-full bg-white text-[#2C3E50] border border-[#2C3E50] py-2 px-4 rounded hover:bg-gray-50"
               onClick={() => handleMessage()}
@@ -93,6 +109,12 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
         propertyId={property?._id}
         isOpen={isMessageModalOpen}
         onClose={() => setIsMessageModalOpen(false)}
+      />
+      <ScheduleVisitModal
+        propertyId={property?._id}
+        propertyTitle={property?.title}
+        isOpen={isScheduleVisitModalOpen}
+        onClose={() => setIsScheduleVisitModalOpen(false)}
       />
     </div>
   );
